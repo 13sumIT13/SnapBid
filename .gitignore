@@ -1,0 +1,50 @@
+# Virtual environment
+venv/
+.env/
+
+# Python compiled files
+*.pyc
+*.pyo
+__pycache__/
+
+# Database
+db.sqlite3
+*.sqlite3
+
+# Django static and media files
+/static/
+/media/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+
+# MacOS and other system files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+
+# Git settings
+.git/
+
+# Coverage reports
+htmlcov/
+.coverage
+*.cover
+*.py,cover
+
+# Node.js files (if applicable)
+node_modules/
+
+# Celery beat schedule file
+celerybeat-schedule
+
+# Pytest cache
+.pytest_cache/
