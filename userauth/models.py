@@ -2,14 +2,11 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
-    username = models.CharField(max_length=50, unique=True)
-    email = models.EmailField(max_length=50, unique=True)
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
 
-    USERNAME_FIELD = 'username'
+    bio = models.TextField(max_length=500, blank=True)
+
 
     
     def __str__(self):
-        self.first_name + ' ' + self.last_name
+        return self.first_name + ' ' + self.last_name
     
