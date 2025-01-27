@@ -48,4 +48,4 @@ def user_logout(request):
         logout(request)
         return redirect('login')  # Redirect to login page after logout
 
-    return render(request, 'userauth/logout.html')  # Render a logout confirmation page
+    return render(request, 'registration/logout.html')  # Render a logout confirmation page
