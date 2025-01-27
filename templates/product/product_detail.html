@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Product Detail</title>
 </head>
 <body>
-    <h1>Product</h1>
-    <ul>
-        <img src="{{ product.image.url }}" alt="product-img">
-        <li>{{ product.status }}</li>
-        <li>{{ product.starting_price }}</li>
-    </ul>
+    <h1>{{ product.name }}</h1>
+    <p>{{ product.description }}</p>
+    <p>Starting Price: {{ product.starting_price }}</p>
+    <p>Status: {{ product.get_status_display }}</p>
+    <img src="{{ product.image.url }}" alt="Product Image">
 </body>
 </html>

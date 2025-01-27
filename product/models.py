@@ -7,11 +7,6 @@ STATUS_CHOICES = [
 ]
 
 class Product(models.Model):
-    p_id = models.CharField(
-        max_length=22, 
-        unique=True, 
-        default=shortuuid.uuid
-    )
     name = models.CharField(max_length=100)
     description = models.TextField()
     starting_price = models.IntegerField()

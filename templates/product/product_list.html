@@ -9,7 +9,7 @@
     <h1>Product</h1>
     <ul>
     {% for product in object_list %}
-        <a href="{% url "product-detail" product.p_id %}"><img src="{{ product.image.url }}" alt="product-img"></a>
+        <a href="{% url "product-detail" product.id %}"><img src="{{ product.image.url }}" alt="product-img"></a>
         <li>{{ product.status}}</li>
         <li>{{ product.starting_price}}</li>
     {% empty %}
