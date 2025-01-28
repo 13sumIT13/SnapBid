@@ -32,6 +32,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    #external apps 
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -74,7 +76,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'auction.wsgi.application'
+# WSGI_APPLICATION = 'auction.wsgi.application'
+ASGI_APPLICATION = 'auction.asgi.application'
 
 
 # Database
