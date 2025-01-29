@@ -65,4 +65,14 @@ class ProductAuction(LoginRequiredMixin, DetailView):
     template_name = 'product/product_auction.html'
     context_object_name = 'auction'
 
-    
+    def get_context_data(self, **kwargs):
+        """Pass product_id and auction_id to the template."""
+        context = super().get_context_data(**kwargs)
+        auction = self.get_object()
+
+        # Get the auction associated with this product (if it exists)
+        product = auction.product
+
+        context['product'] = product
+
+        return context
