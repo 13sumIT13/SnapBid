@@ -2,10 +2,11 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from userauth.models import User
+from django.utils import timezone
 
 STATUS_CHOICES = [
-    ('A', 'Available'),
-    ('S', 'Sold'),
+    ('Available', 'Available'),
+    ('Sold', 'Sold'),
 ]
 
 BID_CHOICES = [
@@ -19,7 +20,7 @@ class Product(models.Model):
     description = models.TextField()
     starting_price = models.PositiveIntegerField()
     image = models.ImageField(upload_to='product_images/')
-    status = models.CharField(choices=STATUS_CHOICES, max_length=1, default='A')
+    status = models.CharField(choices=STATUS_CHOICES, max_length=10, default='A')
 
     def __str__(self):
         return self.name
@@ -31,6 +32,8 @@ class Auction(models.Model):
     bidder = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(choices=BID_CHOICES, max_length=10, default='Live')
 
+    end_time = models.DateTimeField(default=timezone.now() + timezone.timedelta(hours=1))
+    
     def __str__(self):
         return f"Auction for {self.product.name} - {self.status}"
 
