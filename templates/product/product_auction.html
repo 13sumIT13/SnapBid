@@ -4,8 +4,25 @@
 <head>
     <meta charset="utf-8"/>
     <title>Chat Room</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff4500;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
+    <div id="timer">Waiting for timer...</div> <!-- Timer will update here -->
+
     <div style="display: flex; flex-direction: row-reverse; justify-content: space-between;">
         <div>
             <ul>
@@ -74,6 +91,40 @@
             messageInputDom.value = '';
     };
     </script>
+    <script>
+        // Create a WebSocket connection
+        const socket = new WebSocket("ws://127.0.0.1:8000/ws/timer/");  // Adjust URL if needed
+        const auction = {{ auction.id }};
+        socket.onopen = function(event) {
+            console.log("WebSocket connected!");
+            
+            // Send auction ID request to WebSocket (Replace '1' with dynamic ID if needed)
+            socket.send(JSON.stringify({ "auction": auction }));
+        };
+
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log("Received:", data);
+
+            if (data.message === "Auction Ended") {
+                document.getElementById("timer").innerHTML = "<b style='color:red;'>Auction Ended</b>";
+                alert("auction ended")
+                document.getElementById("chat-message-submit").classList.add("hidden");
+                window.location.href = "/products/";
+            } else {
+                document.getElementById("timer").textContent = `⏳ ${data.message}`;
+            }
+        };
+
+        socket.onerror = function(error) {
+            console.error("WebSocket Error:", error);
+        };
+
+        socket.onclose = function(event) {
+            console.log("WebSocket disconnected!");
+        };
+    </script>
+
     
 
 </body>
