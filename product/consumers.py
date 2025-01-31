@@ -57,6 +57,7 @@ class BidConsumer(WebsocketConsumer):
             "new_bid": new_bid,
             "auction_id": auction_id
         }))
+
 class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
@@ -89,6 +90,8 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
             remaining_seconds = int(end_time - time.time())
 
             if remaining_seconds <= 0:
+                await self.close_auction(auction_id)
+                
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
@@ -132,3 +135,13 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
             return Auction.objects.get(id=auction_id)
         except Auction.DoesNotExist:
             return None
+    @sync_to_async
+    def close_auction(self, auction_id):
+        """Close the auction and set status to Closed."""
+        try:
+            auction = Auction.objects.get(id=auction_id)
+            auction.status = "Closed"
+            auction.save()
+        except Auction.DoesNotExist:
+            pass
+        return None

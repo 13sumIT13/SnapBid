@@ -76,3 +76,4 @@ class ProductAuction(LoginRequiredMixin, DetailView):
         context['product'] = product
 
         return context
+    
