@@ -3,6 +3,10 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from userauth.models import User
 from django.utils import timezone
+import json
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
 
 STATUS_CHOICES = [
     ('Available', 'Available'),
@@ -54,3 +58,13 @@ def create_or_update_auction(sender, instance, created, **kwargs):
             auction.current_bid = instance.starting_price
 
     auction.save()
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.message}"
+    

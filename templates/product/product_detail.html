@@ -15,9 +15,7 @@
     <img src="{{ product.image.url }}" alt="Product Image">
     {% if auction_id %}
         <p>Auction ID: {{ auction_id }}</p>
-        {% if auction.status == "Live" %}
-            <a href="{% url 'product-auction' auction_id %}">View Auction</a>
-        {% endif %}
+        <a href="{% url 'product-auction' auction_id %}">View Auction</a>
     {% else %}
         <p>No active auction for this product.</p>
     {% endif %}
