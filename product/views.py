@@ -41,6 +41,9 @@ class PrdocutCreate(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("product-list")
     login_url = 'login'
 
+    def set_owner(self, obj):
+        obj.owner = self.request.user
+
 class ProductUpdate(LoginRequiredMixin, UpdateView):
     model = Product
     fields = "__all__"

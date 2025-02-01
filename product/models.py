@@ -3,9 +3,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from userauth.models import User
 from django.utils import timezone
-import json
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
+from datetime import timedelta
+
 
 
 STATUS_CHOICES = [
@@ -20,6 +19,7 @@ BID_CHOICES = [
 
 
 class Product(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100)
     description = models.TextField()
     starting_price = models.PositiveIntegerField()
@@ -30,14 +30,16 @@ class Product(models.Model):
         return self.name
 
 
+def get_default_end_time():
+    return timezone.now() + timedelta(hours=1)
+
 class Auction(models.Model):
     product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name="auction")
     current_bid = models.PositiveIntegerField(null=True, blank=True)
     bidder = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(choices=BID_CHOICES, max_length=10, default='Live')
 
-    end_time = models.DateTimeField(default=timezone.now() + timezone.timedelta(hours=1))
-    
+    end_time = models.DateTimeField(default=get_default_end_time)    
     def __str__(self):
         return f"Auction for {self.product.name} - {self.status}"
 

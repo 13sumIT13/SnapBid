@@ -7,8 +7,10 @@
 </head>
 <body>
     <h1>{{ product.name }}</h1>
-    <a href="{% url 'product-delete' product.id %}"><input type="button" value="Delete"></a>
-    <a href="{% url 'product-update' product.id %}"><input type="button" value="Update"></a>
+    {% if product.owner == request.user %}
+        <a href="{% url 'product-delete' product.id %}"><input type="button" value="Delete"></a>
+        <a href="{% url 'product-update' product.id %}"><input type="button" value="Update"></a>
+    {% endif %}
     <p>{{ product.description }}</p>    
     <p>Starting Price: {{ product.starting_price }}</p>
     <p>Status: {{ product.get_status_display }}</p>
