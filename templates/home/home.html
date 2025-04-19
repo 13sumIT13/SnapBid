@@ -1,16 +1,108 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>home page</h1>
-    
-    <form method="POST" action="{% url "logout" %}">
-        {% csrf_token %}
-        <button>Logout</button>
-    </form>
-</body>
-</html>
+{% extends "partials/base.html" %}
+{% load static %}
+{% block main %}
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="hero-title">Bid. Win. Dominate the Auction.</h1>
+                    <p class="hero-subtitle">The Ultimate Marketplace Where Every Second Counts.
+                    Join thousands of bidders competing live for exclusive deals, rare finds, and hot products.
+                    Place your bids, make your move — and own the moment.</p>
+                    <div class="d-flex gap-3">
+                        <a href="{% url "product-list" %}" class="btn btn-primary">
+                            Bid Now<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right ms-1" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 hero-image-container">
+                    <div class="position-relative">
+                        <!-- Developer illustration -->
+                        <img src="{% static '/images/hero.jpg' %}" alt="Developer working" class="hero-image">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Landing Pages Showcase Section -->
+    <section class="showcase-section"  id="how-it-works">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="demo-badge">3 steps</div>
+                    <h2 class="showcase-title">How It Works</h2>
+                    <p class="showcase-description"> Follow These Easy Steps to Join the Auction and Win Your Favorite Products.</p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Demo 1 -->
+                <div class="col-lg-4">
+                    <h3 class="demo-title">🛒 Step 1: Choose Your Product</h3>
+                    <div class="card demo-card">
+                        <img src="{% static '/images/chose.jpg' %}" alt="Multipurpose Demo" class="demo-image">
+                    </div>
+                </div>
+                
+                <!-- Demo 2 -->
+                <div class="col-lg-4">
+                    <h3 class="demo-title">💸 Step 2: Place Your Bid</h3>
+                    <div class="card demo-card">
+                        <img src="{% static '/images/bid-amt.jpg' %}" alt="Mobile App Demo" class="demo-image">
+                    </div>
+                </div>
+                
+                <!-- Demo 3 -->
+                <div class="col-lg-4">
+                    <h3 class="demo-title">⏱️ Step 3: Stay Till the End</h3>
+                    <div class="card demo-card">
+                        <img src="{% static '/images/last.jpg' %}" alt="Desktop App Demo" class="demo-image">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- recent winners -->
+    <section class="showcase-winner-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="demo-badge">12 Demos!</div>
+                    <h2 class="showcase-title">Recent Winners</h2>
+                    <p class="showcase-description"> Here are some happy users who just won their favorite products through our live bidding system.</p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Demo 1 -->
+                <div class="col-lg-4">
+                    <h3 class="demo-title">#Winner 1</h3>
+                    <div class="card demo-card">
+                        <img src="{% static '/images/w1.jpg' %}" alt="Multipurpose Demo" class="demo-image">
+                    </div>
+                </div>
+                
+                <!-- Demo 2 -->
+                <div class="col-lg-4">
+                    <h3 class="demo-title">#Winner 2</h3>
+                    <div class="card demo-card">
+                        <img src="{% static '/images/w2.jpg' %}" alt="Mobile App Demo" class="demo-image">
+                    </div>
+                </div>
+                
+                <!-- Demo 3 -->
+                <div class="col-lg-4">
+                    <h3 class="demo-title">#Winner 3</h3>
+                    <div class="card demo-card">
+                        <img src="{% static '/images/w3.jpg' %}" alt="Desktop App Demo" class="demo-image">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main %}

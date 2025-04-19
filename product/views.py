@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views.generic import ListView, DetailView, CreateView, DeleteView, UpdateView
-from product.models import Product, Auction
+from product.models import Product, Auction, Bid
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
@@ -61,8 +61,6 @@ class ProductDelete(LoginRequiredMixin, DeleteView):
     login_url = 'login'
 
 
-    
-
 class ProductAuction(LoginRequiredMixin, DetailView):
     model = Auction
     template_name = 'product/product_auction.html'
@@ -75,8 +73,9 @@ class ProductAuction(LoginRequiredMixin, DetailView):
 
         # Get the auction associated with this product (if it exists)
         product = auction.product
+        bid = Bid.objects.filter(auction=auction).reverse()
 
         context['product'] = product
+        context['bid'] = bid
 
         return context
-    

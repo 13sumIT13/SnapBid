@@ -1,0 +1,141 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block main %}    
+    <div class="container">
+        <div class="contact-container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="floating-shapes">
+                    <div class="shape shape-1"></div>
+                    <div class="shape shape-2"></div>
+                    <div class="shape shape-3"></div>
+                </div>
+                <div class="position-relative">
+                    <h1><i class="fas fa-envelope me-2"></i>Contact Us</h1>
+                    <p class="lead mb-0">We'd love to hear from you. Get in touch with our team.</p>
+                </div>
+            </div>
+
+            <div class="row g-0">
+                <!-- Contact Form -->
+                <div class="col-lg-7 contact-form">
+                    <h3 class="mb-4">Send us a message</h3>
+                    <form id="contactForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="name" placeholder="Your Name" required>
+                                    <label for="name" class="required-label">Your Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <input type="email" class="form-control" id="email" placeholder="Your Email" required>
+                                    <label for="email" class="required-label">Your Email</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="subject" placeholder="Subject" required>
+                                <label for="subject" class="required-label">Subject</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-floating">
+                                <textarea class="form-control" id="message" style="height: 150px" placeholder="Your Message" required></textarea>
+                                <label for="message" class="required-label">Your Message</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="newsletter">
+                                <label class="form-check-label" for="newsletter">
+                                    Subscribe to our newsletter for updates on upcoming auctions
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <button type="submit" class="submit-btn">
+                                <i class="fas fa-paper-plane me-2"></i>Send Message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="col-lg-5 contact-info">
+                    <h3 class="mb-4">Contact Information</h3>
+                    
+                    <div class="contact-card">
+                        <div class="icon-circle">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h5>Our Location</h5>
+                        <p class="text-muted mb-0">1234 Auction Street, Suite 500<br>New York, NY 10001</p>
+                    </div>
+                    
+                    <div class="contact-card">
+                        <div class="icon-circle">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <h5>Phone Numbers</h5>
+                        <p class="text-muted mb-0">General: (555) 123-4567<br>Support: (555) 765-4321</p>
+                    </div>
+                    
+                    <div class="contact-card">
+                        <div class="icon-circle">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h5>Email Addresses</h5>
+                        <p class="text-muted mb-0">info@auctionsite.com<br>support@auctionsite.com</p>
+                    </div>
+                    
+                    <div class="map-container">
+                        <img src="/api/placeholder/600/250?text=Google Map Integration" alt="Map" style="width:100%; height:100%; object-fit: cover;">
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <p class="mb-2">Connect with us</p>
+                        <div class="social-links">
+                            <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // Basic form validation
+            const requiredFields = document.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            if (isValid) {
+                // Display success message
+                alert('Your message has been sent successfully! We will get back to you soon.');
+                this.reset();
+            }
+        });
+    </script>
+{% endblock main %}

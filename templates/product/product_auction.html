@@ -1,131 +1,154 @@
-<!-- chat/templates/chat/room.html -->
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8"/>
-    <title>Chat Room</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-        }
-        #timer {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ff4500;
-        }
-        .hidden {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    <div id="timer">Waiting for timer...</div> <!-- Timer will update here -->
-
-    <div style="display: flex; flex-direction: row-reverse; justify-content: space-between;">
-        <div>
-            <ul>
-                <li> product id: {{ product.id }}</li>
-                <li> product name: {{ product.name }}</li>
-                <li>product name: <img src="{{ product.image.url }}" alt=""></li>
-                <li>prdocut description: {{ product.description }}</li>
-                <li> product price : {{ product.starting_price }}</li>
-                <li id="live-bid"> current product price : {{ auction.current_bid }}</li>
-            </ul>
+{% extends "partials/base.html" %}
+{% block main %}
+<div class="container mt-5 mb-5">
+    <div class="auction-container">
+        <!-- Countdown Timer -->
+        <div class="countdown-timer text-center mb-4">
+            <div class="row">
+                <div class="col">
+                    <div class="timer-value" id="days" style="color:white;">00</div>
+                    <div class="timer-label" style="color:white;">Days</div>
+                </div>
+                <div class="col">
+                    <div class="timer-value" id="hours" style="color:white;">00</div>
+                    <div class="timer-label" style="color:white;">Hours</div>
+                </div>
+                <div class="col">
+                    <div class="timer-value" id="minutes" style="color:white;">00</div>
+                    <div class="timer-label" style="color:white;">Minutes</div>
+                </div>
+                <div class="col">
+                    <div class="timer-value" id="seconds" style="color:white;">00</div>
+                    <div class="timer-label" style="color:white;">Seconds</div>
+                </div>
+            </div>
         </div>
-        <div>
-            <h1>auction page</h1>
-            <textarea id="chat-log" cols="100" rows="20" readonly></textarea><br>
-            <input id="chat-message-input" type="number" size="100" min="1" step="1" placeholder="Enter your bid amount"><br>
 
-            <input id="chat-message-submit" type="button" value="Send">
+        <!-- Main Auction Content -->
+        <div class="row g-0">
+            <!-- Chat Section -->
+            <div class="col-md-6 p-3 chat-container">
+                <h4 class="live-bid current-bid mb-3" id="live-bid">Current Bid: ${{ auction.current_bid }}</h4>
+                <div class="chat-messages border rounded p-3 mb-3" id="chatMessages">
+                    {% for bid in bid %}
+                        <div class="bid-message mb-2">
+                            <strong>{{ bid.user.username }}</strong> bid ${{ bid.bid_amount }}
+                            <small class="text-muted d-block">{{ bid.timestamp|date:"H:i:s" }}</small>
+                        </div>
+                    {% endfor %}
+                </div>
 
+                <div class="chat-input d-flex">
+                    <input type="number" class="form-control me-2" id="chat-message-input" placeholder="Enter your bid" min="1" step="1">
+                    <button id="chat-message-submit" class="btn btn-success">
+                        <i class="fas fa-gavel me-2"></i> Place Bid
+                    </button>
+                </div>
+            </div>
+
+            <!-- Product Section -->
+            <div class="col-md-6 p-4 product-details bg-light">
+                <h2 class="mb-3">{{ product.name }}</h2>
+                <img src="{{ product.image.url }}" alt="Product Image" class="img-fluid mb-4">
+
+                <div class="mb-3">
+                    <h4>Starting Price</h4>
+                    <div class="current-bid text-muted">${{ product.starting_price }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <h4>Current Bid</h4>
+                    <div class="live-bid current-bid" id="live-bid">${{ auction.current_bid }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <h4>Product Details</h4>
+                    <p>{{ product.description }}</p>
+                </div>
+            </div>
         </div>
     </div>
-    
-    <script>
-        const chatSocket = new WebSocket(
-        'ws://'
-        + window.location.host
-        + '/ws/'
-    );
+</div>
+
+<!-- WebSocket for Chat -->
+<script>
+    const auction_id = {{ auction.id }};
+    const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/');
 
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        if(data.new_bid){
-            if(data.new_bid <= {{ auction.current_bid }}){
-                alert('bid amount should be greater than current bid');
+
+        if (data.new_bid) {
+            if (data.new_bid <= {{ auction.current_bid }}) {
+                alert('Bid must be greater than current bid!');
                 return;
             }
-            else{
-                document.querySelector('#chat-log').value += ("new Bid: " + data.new_bid + '\n');
-                document.querySelector('#live-bid').innerHTML = 'current product price : ' + data.new_bid;
-                
-            }
-            alert('new bid added');
+
+            // Update live bid
+            document.getElementById('live-bid').textContent = "Current Bid:"+ "$" + data.new_bid;
+
+            // Create bid message
+            const chatMessages = document.getElementById('chatMessages');
+            const bidMessage = document.createElement('div');
+            bidMessage.classList.add('bid-message');
+            bidMessage.innerHTML = `
+                <strong>${data.bidder}</strong> bid $${data.new_bid}
+                <small class="text-muted d-block">Just now</small>
+            `;
+            chatMessages.appendChild(bidMessage);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            alert('New bid added!');
         }
-
-    };
-    chatSocket.onclose = function(e) {
-            console.error('Chat socket closed unexpectedly');
     };
 
-    document.querySelector('#chat-message-input').focus();
-    document.querySelector('#chat-message-input').onkeyup = function(e) {
-        if (e.key === 'Enter') {  // enter, return
-            document.querySelector('#chat-message-submit').click();
-        }
-    };
+    chatSocket.onclose = () => console.error('Chat socket closed unexpectedly');
 
-    
-    const auction_id = {{ auction.id }};
+    document.getElementById('chat-message-input').addEventListener("keyup", function(e) {
+        if (e.key === 'Enter') document.getElementById('chat-message-submit').click();
+    });
 
-    document.querySelector('#chat-message-submit').onclick = function(e) {
-            const messageInputDom = document.querySelector('#chat-message-input');
-            const message = messageInputDom.value;
+    document.getElementById('chat-message-submit').onclick = function() {
+        const bidInput = document.getElementById('chat-message-input');
+        const bidAmount = bidInput.value;
+
+        if (bidAmount.trim() !== '') {
             chatSocket.send(JSON.stringify({
-                'message': message,
-                'auction' : auction_id
+                'message': bidAmount,
+                'auction': auction_id
             }));
-            messageInputDom.value = '';
+            bidInput.value = '';
+        }
     };
-    </script>
-    <script>
-        // Create a WebSocket connection
-        const socket = new WebSocket("ws://127.0.0.1:8000/ws/timer/");  // Adjust URL if needed
-        const auction = {{ auction.id }};
-        socket.onopen = function(event) {
-            console.log("WebSocket connected!");
-            
-            // Send auction ID request to WebSocket (Replace '1' with dynamic ID if needed)
-            socket.send(JSON.stringify({ "auction": auction }));
-        };
+</script>
 
-        socket.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            console.log("Received:", data);
+<!-- WebSocket for Timer -->
+<script>
+    const timerSocket = new WebSocket("ws://127.0.0.1:8000/ws/timer/");
 
-            if (data.message === "Auction Ended") {
-                document.getElementById("timer").innerHTML = "<b style='color:red;'>Auction Ended</b>";
-                alert("auction ended")
-                document.getElementById("chat-message-submit").classList.add("hidden");
-                window.location.href = "/products/";
-            } else {
-                document.getElementById("timer").textContent = `⏳ ${data.message}`;
-            }
-        };
+    timerSocket.onopen = () => {
+        console.log("Timer WebSocket connected");
+        timerSocket.send(JSON.stringify({ "auction": {{ auction.id }} }));
+    };
 
-        socket.onerror = function(error) {
-            console.error("WebSocket Error:", error);
-        };
+    timerSocket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        console.log("Timer Data:", data);
 
-        socket.onclose = function(event) {
-            console.log("WebSocket disconnected!");
-        };
-    </script>
+        if (data.message === "Auction Ended") {
+            alert("Auction has ended!");
+            document.getElementById("chat-message-submit").disabled = true;
+            window.location.href = "/products/";
+        } else {
+            const time = data.message;
+            document.getElementById("days").textContent = time.days.toString().padStart(2, '0');
+            document.getElementById("hours").textContent = time.hours.toString().padStart(2, '0');
+            document.getElementById("minutes").textContent = time.minutes.toString().padStart(2, '0');
+            document.getElementById("seconds").textContent = time.seconds.toString().padStart(2, '0');
+        }
+    };
 
-    
-
-</body>
-</html>
+    timerSocket.onerror = err => console.error("Timer WebSocket Error:", err);
+    timerSocket.onclose = () => console.log("Timer WebSocket disconnected");
+</script>
+{% endblock main %}

@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Auction Website</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'style/style.css' %}">
+    <link rel="stylesheet" href="{% static "style/product_create.css" %}">
+    <link rel="stylesheet" href="{% static "style/contact.css" %}">
+    <link rel="stylesheet" href="{% static "style/product_detail.css" %}">
+    <link rel="stylesheet" href="{% static "style/product.css" %} ">
+    <link rel="stylesheet" href="{% static "style/auction.css" %}">
+</head>
+<body>
+    {% block navbar %}
+        <nav class="navbar sticky-top navbar-expand-lg navbar-light">
+            <div class="container">
+                <a class="navbar-brand" href="{% url "home" %}">SnapBid</a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+                    <div></div> <!-- Spacer for centering -->
+                    
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url "home" %}">Home</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Auctions
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url "product-list" %}">Upcoming</a></li>
+                                <li><a class="dropdown-item" href="{% url "product-list" %}">Live Now</a></li>
+                                <li><a class="dropdown-item" href="{% url "product-create" %}">Add Product</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Help
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">FAQ</a></li>
+                                <li><a class="dropdown-item" href="/home/#how-it-works">How It Works</a></li>
+                                <li><a class="dropdown-item" href="{% url "contact" %}">Contact Us</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    
+                    <div class="d-flex align-items-center">
+                        {% if request.user.is_authenticated %}
+                            <form method="POST" action="{% url "logout" %}">
+                                {% csrf_token %}
+                                <button class="btn btn-primary mx-2">Logout <i class="fas fa-sign-out-alt"></i> <!-- Logout -->
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="{% url "register" %}" class="btn btn-primary mx-2">
+                                Register <i class="fas fa-user-plus"></i> <!-- Register -->
+                            </a>
+                            <a href="{% url "login" %}" class="btn btn-primary mr-2">
+                            Login <i class="fas fa-sign-in-alt"></i> <!-- Login -->
+
+                            </a>
+                        {% endif %}
+                        
+                    </div>
+                </div>
+            </div>
+        </nav>
+    {% endblock navbar %}
+    <body>
+        
+    {% block main %}
+        
+    {% endblock main %}
+    </body>
+     <!-- Footer Section -->
+     <footer class="footer-section">
+        <div class="container">
+            <div class="row">
+                <!-- Brand column -->
+                <div class="col-lg-3 col-md-6 footer-column">
+                    <h2 class="footer-brand">SnapBid</h2>
+                    <p class="footer-tagline">Bid and Win</p>
+                    <div class="footer-social-icons">
+                        <a href="#" class="footer-social-icon">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="footer-social-icon">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="footer-social-icon">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="#" class="footer-social-icon">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Legal column - desktop view -->
+                <div class="col-lg-3 col-md-6 footer-column d-none d-lg-block">
+                    <h3 class="footer-column-title">Legal</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms and Conditions</a></li>
+                        <li><a href="#">License</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Footer divider -->
+            <div class="footer-divider"></div>
+            
+            <!-- Footer bottom -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="footer-copyright">
+                        Copyright © My Website 2025
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="footer-bottom-links">
+                        <a href="#">Privacy Policy</a>
+                        <a href="#">Terms & Conditions</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+      <!-- Bootstrap JS Bundle with Popper -->
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+  </html>

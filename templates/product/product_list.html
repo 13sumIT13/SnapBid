@@ -1,20 +1,140 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>Product</h1>
-    <ul>
-    {% for product in object_list %}
-        <a href="{% url "product-detail" product.id %}"><img src="{{ product.image.url }}" alt="product-img"></a>
-        <li>{{ product.status}}</li>
-        <li>{{ product.starting_price}}</li>
-    {% empty %}
-        <li>No product yet.</li>
-    {% endfor %}
-    </ul>
-</body>
-</html>
+{% extends "partials/base.html" %}
+{% block main %}
+
+        <!-- Page Header with title and search -->
+        <header class="page-header">
+            <div class="container">
+                <h1 class="page-title">Products</h1>
+                <div class="search-container">
+                    <div class="input-group">
+                        <input type="text" class="form-control search-input" placeholder="Search for auctions..." aria-label="Search for auctions">
+                        <button class="btn search-button" type="button">
+                            <i class="fas fa-search me-2"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main Content -->
+        <main class="container">
+            <div class="row">
+                <!-- Sidebar with filters -->
+                <div class="col-lg-3">
+                    <div class="filters-section">
+                        <h3 class="filters-title">Filters</h3>
+                        
+                        <!-- Categories -->
+                        <div class="mb-4">
+                            <h5>Categories</h5>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="category1">
+                                <label class="form-check-label" for="category1">
+                                    Antiques
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="category2">
+                                <label class="form-check-label" for="category2">
+                                    Art
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="category3">
+                                <label class="form-check-label" for="category3">
+                                    Collectibles
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="category4">
+                                <label class="form-check-label" for="category4">
+                                    Jewelry
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="category5">
+                                <label class="form-check-label" for="category5">
+                                    Watches
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Price Range -->
+                        <div class="mb-4">
+                            <h5>Price Range</h5>
+                            <div class="d-flex align-items-center mb-2">
+                                <input type="number" class="form-control form-control-sm me-2" placeholder="Min">
+                                <span>-</span>
+                                <input type="number" class="form-control form-control-sm ms-2" placeholder="Max">
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary w-100">Apply</button>
+                        </div>
+                        
+                        <!-- Auction Status -->
+                        <div class="mb-4">
+                            <h5>Status</h5>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="status1" checked>
+                                <label class="form-check-label" for="status1">
+                                    Live Auctions
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="status2">
+                                <label class="form-check-label" for="status2">
+                                    Upcoming
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="status3">
+                                <label class="form-check-label" for="status3">
+                                    Closed
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product listing -->
+                <div class="col-lg-9">
+                    <div class="row">
+                        {% for product in object_list %}
+                            <!-- Product Card 1 -->
+                            <div class="col-lg-4 col-md-6">
+                                <div class="card product-card">
+                                    <a href="{% url "product-detail" product.id %}"><img src="{{ product.image.url }}" class="product-image" alt="Vintage Watch"></a>
+                                    <div class="product-card-body">
+                                        <h3 class="product-title">{{ product.name }}</h3>
+                                        <div class="product-info">
+                                            <span class="starting-price">Starting Price: ${{product.starting_price}}</span>
+                                        </div>
+                                        <div class="product-info">
+                                            <span class="time-left"><i class="far fa-clock me-1"></i> 2h 15m left</span>
+                                        </div>
+                                        <button class="btn bid-button">Bid Now</button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                                <li>No product yet.</li>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav aria-label="Product pagination" class="my-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </main>
+{% endblock main %}

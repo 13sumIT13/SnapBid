@@ -1,7 +1,7 @@
 import json
 from channels.generic.websocket import WebsocketConsumer, AsyncJsonWebsocketConsumer
 from asgiref.sync import async_to_sync
-from product.models import Product, Auction, Notification
+from product.models import Product, Auction, Notification, Bid
 import asyncio
 from asgiref.sync import sync_to_async
 from django.utils.timezone import now
@@ -10,6 +10,8 @@ import time
 
 
 class BidConsumer(WebsocketConsumer):
+
+
     def connect(self):
 
         self.room_group_name = "bid_price"
@@ -37,6 +39,9 @@ class BidConsumer(WebsocketConsumer):
             auction.bidder = self.scope["user"] # Set the bidder to the current user
             auction.save()
 
+            bid = Bid.objects.create(auction=auction, user=self.scope["user"], bid_amount=message)
+            bid.save()
+
             notification = Notification.objects.create(user=auction.bidder, message=f"New bid of {message} placed on {auction.product.name}")
             notification.save()
             
@@ -44,7 +49,7 @@ class BidConsumer(WebsocketConsumer):
             notify_user = notification.user.username
 
             print(f"Notification: {notify_message} from User: {notify_user}")
-
+            print(type(notify_user))
             # Send updated bid to all connected clients
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name, 
@@ -52,7 +57,9 @@ class BidConsumer(WebsocketConsumer):
                     "type": "update_bid", 
                     "new_bid": message,
                     "auction_id": auction_id,
-                    "notification": notify_message
+                    "notification": notify_message,
+                    "bidder": notify_user
+                    
                 },
             )
         except Auction.DoesNotExist:
@@ -61,11 +68,13 @@ class BidConsumer(WebsocketConsumer):
     def update_bid(self, event):
         new_bid = event["new_bid"]
         auction_id = event["auction_id"]
+        bidder = event["bidder"]
 
         # Send message to WebSocket
         self.send(text_data=json.dumps({
             "new_bid": new_bid,
-            "auction_id": auction_id
+            "auction_id": auction_id,
+            "bidder": bidder
         }))
     
     def send_notification(self, event):
@@ -140,7 +149,7 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
 
             # Format remaining time as {X days, Y hrs, Z min, W sec}
             formatted_time = self.format_time(remaining_seconds)
-
+            
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -158,7 +167,13 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
         hours = (seconds % 86400) // 3600
         minutes = (seconds % 3600) // 60
         secs = seconds % 60
-        return f"{days} days, {hours} hrs, {minutes} min, {secs} sec"
+
+        return {
+            "days": days,
+            "hours": hours,
+            "minutes": minutes,
+            "seconds": secs
+        }
 
     async def timer_update(self, event):
         """Handles sending timer updates to clients."""
