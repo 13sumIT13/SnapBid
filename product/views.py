@@ -1,14 +1,20 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic import ListView, DetailView, CreateView, DeleteView, UpdateView
 from product.models import Product, Auction, Bid
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
+from django.views import View
+from .forms import ProductForm, ProductImageFormSet, AuctionForm, AuctionUpdateForm
+
 
 class ProductList(ListView):
     model = Product
     template_name = 'product/product_list.html'
     context_object_name = 'products'
+    paginate_by = 5 
+
+    
     
 class ProductDetail(LoginRequiredMixin, DetailView):
     model = Product
@@ -17,15 +23,18 @@ class ProductDetail(LoginRequiredMixin, DetailView):
     pk_url_kwarg = 'id'
     login_url = 'login'
 
-    
     def get_context_data(self, **kwargs):
         """Pass product_id and auction_id to the template."""
         context = super().get_context_data(**kwargs)
         product = self.get_object()
-
+        product.views += 1  # Increment the view count
+        product.save()  # Save the updated view count
         # Get the auction associated with this product (if it exists)
         auction = Auction.objects.filter(product=product, status="Live").first()
+        bid_count = Bid.objects.filter(auction=auction).count() if auction else 0
 
+
+        context['bid_count'] = bid_count
         if auction:
             context["auction_id"] = auction.id  
         else:
@@ -34,24 +43,54 @@ class ProductDetail(LoginRequiredMixin, DetailView):
         context["product_id"] = product.id
         return context
     
-class PrdocutCreate(LoginRequiredMixin, CreateView):
-    model = Product
-    fields = "__all__"
+class ProductCreate(LoginRequiredMixin, View):
     template_name = 'product/product_create.html'
-    success_url = reverse_lazy("product-list")
     login_url = 'login'
 
-    def set_owner(self, obj):
-        obj.owner = self.request.user
+    def get(self, request):
+        return render(request, self.template_name, {
+            'form': ProductForm(),
+            'formset': ProductImageFormSet(),
+        })
+
+    def post(self, request):
+        form = ProductForm(request.POST, request.FILES)
+        formset = ProductImageFormSet(request.POST, request.FILES)
+
+        if form.is_valid() and formset.is_valid():
+            product = form.save(commit=False)
+            product.owner = request.user
+            product.save()
+
+            formset.instance = product
+            formset.save()
+
+            return redirect('product-auction-update', id=product.auction.id)
+
+
+        return render(request, self.template_name, {
+            'form': form,
+            'formset': formset,
+        })
+
 
 class ProductUpdate(LoginRequiredMixin, UpdateView):
     model = Product
-    fields = "__all__"
+    fields = ['name', 'description', 'starting_price', 'image', 'status']
     success_url = reverse_lazy("product-list")
     template_name = 'product/product_update.html'
     pk_url_kwarg = 'id'
     login_url = 'login'
 
+    
+
+class AuctionUpdate(LoginRequiredMixin, UpdateView):
+    model = Auction
+    form_class = AuctionUpdateForm
+    success_url = reverse_lazy("product-list")
+    template_name = 'product/auction_update.html'
+    pk_url_kwarg = 'id'
+    login_url = 'login'
 
 class ProductDelete(LoginRequiredMixin, DeleteView):
     model = Product

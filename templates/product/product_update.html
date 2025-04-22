@@ -1,16 +1,88 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create/Update Product</title>
-</head>
-<body>
-    <h1>{{ view.title }}</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save</button>
-    </form>
-</body>
-</html>
+{% extends "partials/base.html" %}
+{% load widget_tweaks %}
+{% block main %}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow p-4">
+
+                <!-- Header -->
+                <div class="bg-primary text-white text-center rounded-3 py-3 mb-4 d-flex justify-content-center align-items-center gap-2">
+                    <i class="fas fa-box-open fs-4"></i>
+                    <h2 class="mb-0 fw-bold">Update Product Details</h2>
+                </div>
+
+                <!-- Form -->
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.name.label_tag }}
+                            {{ form.name|add_class:"form-control" }}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            {{ form.starting_price.label_tag }}
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                {{ form.starting_price|add_class:"form-control" }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.description.label_tag }}
+                        {{ form.description|add_class:"form-control" }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.condition.label_tag }}
+                        {{ form.condition|add_class:"form-select" }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.status.label_tag }}
+                            {{ form.status|add_class:"form-select" }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ timer_form.end_time.label_tag }}
+                            {{ timer_form.end_time|add_class:"form-control" }}
+                            {% if timer_form.end_time.errors %}
+                                <div class="text-danger">{{ timer_form.end_time.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4 mb-3">Upload Main Product Image</h5>
+                    <div class="mb-3">
+                        {{ form.image.label_tag }}
+                        {{ form.image|add_class:"form-control" }}
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="termsAgreement" required>
+                        <label class="form-check-label" for="termsAgreement">
+                            I agree to the terms and conditions of the auction
+                        </label>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check-circle me-2"></i>Save Product
+                        </button>
+                    </div>
+                </form>
+
+                <div class="gallery-preview mt-4" id="imagePreviewContainer">
+                    <!-- Optional image preview via JS -->
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

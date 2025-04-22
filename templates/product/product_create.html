@@ -1,143 +1,88 @@
 {% extends "partials/base.html" %}
 {% block main %}
-    <h1>{{ view.title }}</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save</button>
-    </form>
+{% load widget_tweaks %}
 
-    <div class="container">
-        <div class="product-create-container">
-            <div class="form-header">
-                <h2 class="text-center mb-0">
-                    <i class="fas fa-plus-circle me-2"></i>List Your Product for Auction
-                </h2>
+<h1>{{ view.title }}</h1>
+
+<div class="container">
+    <div class="product-create-container">
+        <div class="form-header">
+            <h2 class="text-center mb-0">
+                <i class="fas fa-plus-circle me-2"></i>List Your Product for Auction
+            </h2>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.name.label_tag }}
+                    {{ form.name|add_class:"form-control" }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.starting_price.label_tag }}
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        {{ form.starting_price|add_class:"form-control" }}
+                    </div>
+                </div>
             </div>
 
-            <form id="productCreateForm">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="productName" class="form-label required-label">Product Name</label>
-                        <input type="text" class="form-control" id="productName" placeholder="Enter product name" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="startingPrice" class="form-label required-label">Starting Price</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" class="form-control" id="startingPrice" placeholder="Enter starting price" min="0" step="0.01" required>
-                        </div>
-                    </div>
-                </div>
+            <div class="mb-3">
+                {{ form.description.label_tag }}
+                {{ form.description|add_class:"form-control" }}
+            </div>
 
+
+            <div class="mb-3">
+                {{ form.condition.label_tag }}
+                {{ form.condition|add_class:"form-select" }}
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.status.label_tag }}
+                    {{ form.status|add_class:"form-select" }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ timer_form.end_time.label_tag }}
+                    {{ timer_form.end_time }}
+                    {% if timer_form.end_time.errors %}
+                        <div class="text-danger">{{ timer_form.end_time.errors }}</div>
+                    {% endif %}
+                </div>
+                
+            </div>
+            <h3 class="mt-4">Product Images</h3>
+            <div class="mb-3">
+                {{ form.image.label_tag }}
+                {{ form.image|add_class:"form-control" }}
+            </div>
+
+            {{ formset.management_form }}
+            {% for image_form in formset %}
                 <div class="mb-3">
-                    <label for="productDescription" class="form-label required-label">Product Description</label>
-                    <textarea class="form-control" id="productDescription" rows="5" placeholder="Provide a detailed description of your product" required></textarea>
+                    {{ image_form.image.label_tag }}
+                    {{ image_form.image|add_class:"form-control" }}
                 </div>
+            {% endfor %}
 
-                <div class="mb-3">
-                    <label class="form-label required-label">Product Images</label>
-                    <div class="image-upload-container">
-                        <input type="file" id="imageUpload" class="d-none custom-file-input" accept="image/*" multiple>
-                        <label for="imageUpload" class="btn btn-upload">
-                            <i class="fas fa-upload me-2"></i>Upload Images
-                        </label>
-                        <p class="text-muted mt-2">Supported formats: JPG, PNG, WEBP (Max 5 images)</p>
-                    </div>
-                    <div class="gallery-preview" id="imagePreviewContainer"></div>
-                </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="termsAgreement" required>
+                <label class="form-check-label" for="termsAgreement">
+                    I agree to the terms and conditions of the auction
+                </label>
+            </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="auctionStartDate" class="form-label">Auction Start Date</label>
-                        <input type="datetime-local" class="form-control" id="auctionStartDate">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="auctionEndDate" class="form-label required-label">Auction End Date</label>
-                        <input type="datetime-local" class="form-control" id="auctionEndDate" required>
-                    </div>
-                </div>
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-gavel me-2"></i>List Product for Auction
+                </button>
+            </div>
+        </form>
 
-                <div class="mb-3">
-                    <label for="productCondition" class="form-label">Product Condition</label>
-                    <select class="form-select" id="productCondition">
-                        <option value="new">New</option>
-                        <option value="like-new">Like New</option>
-                        <option value="good">Good</option>
-                        <option value="fair">Fair</option>
-                    </select>
-                </div>
-
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="termsAgreement" required>
-                    <label class="form-check-label" for="termsAgreement">
-                        I agree to the terms and conditions of the auction
-                    </label>
-                </div>
-
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-gavel me-2"></i>List Product for Auction
-                    </button>
-                </div>
-            </form>
-        </div>
+        <div class="gallery-preview" id="imagePreviewContainer"></div>
     </div>
-    <script>
-        document.getElementById('imageUpload').addEventListener('change', function(event) {
-            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-            imagePreviewContainer.innerHTML = ''; // Clear previous previews
+</div>
 
-            const files = event.target.files;
-            const maxFiles = 5;
-
-            for (let i = 0; i < Math.min(files.length, maxFiles); i++) {
-                const file = files[i];
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
-                    const previewWrapper = document.createElement('div');
-                    previewWrapper.classList.add('image-preview');
-                    
-                    const previewImage = document.createElement('img');
-                    previewImage.src = e.target.result;
-                    
-                    const removeButton = document.createElement('div');
-                    removeButton.classList.add('remove-image');
-                    removeButton.innerHTML = '&times;';
-                    removeButton.onclick = function() {
-                        previewWrapper.remove();
-                    };
-
-                    previewWrapper.appendChild(previewImage);
-                    previewWrapper.appendChild(removeButton);
-                    imagePreviewContainer.appendChild(previewWrapper);
-                };
-
-                reader.readAsDataURL(file);
-            }
-        });
-
-        document.getElementById('productCreateForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            // Basic form validation
-            const requiredFields = document.querySelectorAll('[required]');
-            let isValid = true;
-
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    field.classList.add('is-invalid');
-                    isValid = false;
-                } else {
-                    field.classList.remove('is-invalid');
-                }
-            });
-
-            if (isValid) {
-                alert('Product listed successfully!');
-                // In a real application, you would send this data to a backend service
-            }
-        });
-    </script>
-{% endblock main %}
+{% endblock %}

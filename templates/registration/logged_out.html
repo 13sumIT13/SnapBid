@@ -1,11 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h3>you are logged out click here to <a href="{% url "login" %}">login</a></h3>
-</body>
-</html>
+{% extends "partials/base.html" %}
+{% block main %}
+    <div class="container text-center my-5">
+        <div class="card p-5">
+            <h2 class="mb-3">You are logged out</h2>
+            <p class="mb-4">Want to continue exploring?</p>
+            <a href="{% url 'login' %}"><button class="btn btn-primary">Login Again</button></a>
+        </div>
+    </div>
+
+{% endblock main %}

@@ -13,10 +13,9 @@
                         <img src="{{ product.image.url }}" alt="Product Image" class="product-image-detail" id="main-image">
                     </div>
                     <div class="thumbnail-container">
-                        <img src="{{ product.image.url }}" alt="Thumbnail 1" class="thumbnail active" onclick="changeImage(this)">
-                        <img src="{{ product.image.url }}" alt="Thumbnail 2" class="thumbnail" onclick="changeImage(this)">
-                        <img src="{{ product.image.url }}" alt="Thumbnail 3" class="thumbnail" onclick="changeImage(this)">
-                        <img src="{{ product.image.url }}" alt="Thumbnail 4" class="thumbnail" onclick="changeImage(this)">
+                        {% for img in product.images.all %}
+                            <img src="{{ img.image.url }}" alt="Thumbnail 1" class="thumbnail active" onclick="changeImage(this)">
+                        {% endfor %}
                     </div>
                 </div>
                 
@@ -45,8 +44,8 @@
                     </div>
                     
                     <div class="mt-3 d-flex align-items-center">
-                        <span class="me-3"><i class="fas fa-eye text-primary"></i> 243 watching</span>
-                        <span><i class="fas fa-user-friends text-primary"></i> 18 bids placed</span>
+                        <span class="me-3"><i class="fas fa-eye text-primary"></i> {{product.views}} watching</span>
+                        <span><i class="fas fa-user-friends text-primary"></i> {{bid_count}} bids placed</span>
                     </div>
                     
                     <!-- Admin Controls Section -->
