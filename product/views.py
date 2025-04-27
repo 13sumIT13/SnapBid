@@ -6,13 +6,13 @@ from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.views import View
 from .forms import ProductForm, ProductImageFormSet, AuctionForm, AuctionUpdateForm
-
+from django.contrib import messages
 
 class ProductList(ListView):
     model = Product
     template_name = 'product/product_list.html'
     context_object_name = 'products'
-    paginate_by = 5 
+    paginate_by = 6 
 
     
     
@@ -46,6 +46,7 @@ class ProductDetail(LoginRequiredMixin, DetailView):
 class ProductCreate(LoginRequiredMixin, View):
     template_name = 'product/product_create.html'
     login_url = 'login'
+    success_message = "Product created successfully!"
 
     def get(self, request):
         return render(request, self.template_name, {
@@ -81,6 +82,7 @@ class ProductUpdate(LoginRequiredMixin, UpdateView):
     template_name = 'product/product_update.html'
     pk_url_kwarg = 'id'
     login_url = 'login'
+    success_message = "Product updated successfully!"
 
     
 
@@ -92,12 +94,24 @@ class AuctionUpdate(LoginRequiredMixin, UpdateView):
     pk_url_kwarg = 'id'
     login_url = 'login'
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Auction updated successfully!")
+        return response
+
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        messages.error(self.request, "There was an error updating the auction.")
+        return response
+    
+
 class ProductDelete(LoginRequiredMixin, DeleteView):
     model = Product
     template_name = 'product/product_delete.html'
     success_url = reverse_lazy("product-list")
     pk_url_kwarg = 'id'
     login_url = 'login'
+    success_message = "Product deleted successfully!"
 
 
 class ProductAuction(LoginRequiredMixin, DetailView):

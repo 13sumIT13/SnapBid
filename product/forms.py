@@ -10,7 +10,7 @@ class ProductForm(ModelForm):
     
     class Meta:
         model = Product
-        exclude = ['owner']
+        exclude = ['owner', 'views']
 
 ProductImageFormSet = inlineformset_factory(
     Product, ProductImage,

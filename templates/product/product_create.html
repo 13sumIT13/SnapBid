@@ -44,14 +44,6 @@
                     {{ form.status.label_tag }}
                     {{ form.status|add_class:"form-select" }}
                 </div>
-                <div class="col-md-6 mb-3">
-                    {{ timer_form.end_time.label_tag }}
-                    {{ timer_form.end_time }}
-                    {% if timer_form.end_time.errors %}
-                        <div class="text-danger">{{ timer_form.end_time.errors }}</div>
-                    {% endif %}
-                </div>
-                
             </div>
             <h3 class="mt-4">Product Images</h3>
             <div class="mb-3">

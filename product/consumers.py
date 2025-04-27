@@ -11,7 +11,6 @@ import time
 
 class BidConsumer(WebsocketConsumer):
 
-
     def connect(self):
 
         self.room_group_name = "bid_price"
@@ -35,31 +34,49 @@ class BidConsumer(WebsocketConsumer):
 
         try:
             auction = Auction.objects.get(id=auction_id)
+
+            # Store the current bidder before updating
+            current_bidder = auction.bidder
+
+            # Update the auction with the new bid
             auction.current_bid = message
-            auction.bidder = self.scope["user"] # Set the bidder to the current user
+            auction.bidder = self.scope["user"]  # Set the bidder to the current user
             auction.save()
 
+            # Initialize variables for notification
+            notify_message = None
+            notify_user = None
+
+            # Check if there was a previous bidder
+            if current_bidder:  # If there was a previous bidder
+                prev_bid = Bid.objects.filter(auction=auction, user=current_bidder).first()
+
+                if prev_bid:
+                    prev_bidder = prev_bid.user
+                    notification = Notification.objects.create(
+                        user=prev_bidder,
+                        heading="Outbid Notification",
+                        message=f"New bid of {message} placed on {auction.product.name} by {auction.bidder.username}. The current bid is {auction.current_bid}."
+                    )
+                    notification.save()
+
+                    notify_message = notification.message
+                    notify_user = notification.user.username
+                    print(f"Notification: {notify_message} from User: {notify_user}")
+
+            # Create the new bid
             bid = Bid.objects.create(auction=auction, user=self.scope["user"], bid_amount=message)
             bid.save()
 
-            notification = Notification.objects.create(user=auction.bidder, message=f"New bid of {message} placed on {auction.product.name}")
-            notification.save()
-            
-            notify_message = notification.message
-            notify_user = notification.user.username
-
-            print(f"Notification: {notify_message} from User: {notify_user}")
-            print(type(notify_user))
             # Send updated bid to all connected clients
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name, 
                 {
-                    "type": "update_bid", 
+                    "type": "update_bid",
                     "new_bid": message,
                     "auction_id": auction_id,
                     "notification": notify_message,
-                    "bidder": notify_user
-                    
+                    "bidder": auction.bidder.username if auction.bidder else None
                 },
             )
         except Auction.DoesNotExist:
@@ -69,20 +86,25 @@ class BidConsumer(WebsocketConsumer):
         new_bid = event["new_bid"]
         auction_id = event["auction_id"]
         bidder = event["bidder"]
-
+        notification = event["notification"]
         # Send message to WebSocket
         self.send(text_data=json.dumps({
             "new_bid": new_bid,
             "auction_id": auction_id,
+            "bidder": bidder,
+            "notification": notification,
             "bidder": bidder
         }))
     
-    def send_notification(self, event):
-        notification = event["notification"]
-        print(f"Sending Notification: {notification}")
-        self.send(text_data=json.dumps({
-            "notification": notification
-        }))
+    # def send_notification(self, event):
+    #     notification = event["notification"]
+    #     user = event["bidder"]
+    #     print(f"Sending Notification: {notification} to {user}")
+    #     # Send message to WebSocket
+    #     self.send(text_data=json.dumps({
+    #         "notification": notification,
+    #         "user": user
+    #     }))
  
 
 class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
@@ -126,12 +148,16 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
 
             if remaining_seconds <= 300 and not notification_sent:  # 5-minute warning
                 notification_sent = True
+                notification = Notification.objects.create(
+                    user=self.scope["user"],
+                    heading="Auction Ending Soon",
+                    message=f"The auction for {auction_id} is ending in 5 minutes."
+                )
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
                         "type": "send_notification",
-                        "message": "Auction Ending in 5 minutes",
-                        "auction": auction_id
+                        "notification": notification
                     }
                 )
 
@@ -198,7 +224,9 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
             if auction.bidder:
                 notify = Notification.objects.create(
                     user=auction.bidder,
-                    message=f"Congratulations! You won the auction for {auction.product.name}."
+                    heading=f"Auction Won : {auction.product.name}",
+                    message=f"You have won the auction for {auction.product.name}! Your bid of {auction.current_bid} was successful. Please proceed with the payment and complete your purchase."
+                    
                 )
                 async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name, 

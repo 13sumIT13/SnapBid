@@ -54,18 +54,12 @@
                 <h2 class="mb-3">{{ product.name }}</h2>
                 <img src="{{ product.image.url }}" alt="Product Image" class="img-fluid mb-4">
 
-                <div class="mb-3">
-                    <h4>Starting Price</h4>
-                    <div class="current-bid text-muted">${{ product.starting_price }}</div>
+                <div class="mb-4 text-bold">
+                    <h4>Starting Price: ${{ product.starting_price }}</h4>
                 </div>
 
-                <div class="mb-3">
-                    <h4>Current Bid</h4>
-                    <div class="live-bid current-bid" id="live-bid">${{ auction.current_bid }}</div>
-                </div>
-
-                <div class="mb-3">
-                    <h4>Product Details</h4>
+                <div class="mb-4 text-bold">
+                    <h4 class="mb-3">Product Details</h4>
                     <p>{{ product.description }}</p>
                 </div>
             </div>
@@ -75,17 +69,15 @@
 
 <!-- WebSocket for Chat -->
 <script>
-    const auction_id = {{ auction.id }};
+  
+    const auction_id = {{ auction.id|safe }};
     const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/');
 
     chatSocket.onmessage = function(e) {
+        
         const data = JSON.parse(e.data);
-
+        console.log("Chat Data:", data);
         if (data.new_bid) {
-            if (data.new_bid <= {{ auction.current_bid }}) {
-                alert('Bid must be greater than current bid!');
-                return;
-            }
 
             // Update live bid
             document.getElementById('live-bid').textContent = "Current Bid:"+ "$" + data.new_bid;
@@ -101,8 +93,16 @@
             chatMessages.appendChild(bidMessage);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            alert('New bid added!');
+            Swal.fire({
+                icon: "success",
+                title: `${data.bidder} placed a bid of $${data.new_bid}`,
+                timer: 2000,
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false
+            });
         }
+
     };
 
     chatSocket.onclose = () => console.error('Chat socket closed unexpectedly');
@@ -115,14 +115,26 @@
         const bidInput = document.getElementById('chat-message-input');
         const bidAmount = bidInput.value;
 
-        if (bidAmount.trim() !== '') {
+        if (bidAmount.trim() !== '' && parseFloat(bidAmount) > {{ auction.current_bid }}) {
             chatSocket.send(JSON.stringify({
                 'message': bidAmount,
                 'auction': auction_id
             }));
             bidInput.value = '';
         }
+        else{
+            Swal.fire({
+                icon: "error",
+                title: "Bid must be higher than current bid",
+                timer: 2000,
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false
+            });
+        }
     };
+
+    //
 </script>
 
 <!-- WebSocket for Timer -->
@@ -136,10 +148,17 @@
 
     timerSocket.onmessage = function(event) {
         const data = JSON.parse(event.data);
-        console.log("Timer Data:", data);
+        //console.log("Timer Data:", data);
 
         if (data.message === "Auction Ended") {
-            alert("Auction has ended!");
+            Swal.fire({
+                icon: "info",
+                title: "Auction Ended",
+                text: "The auction has ended. Redirecting to products page.",
+                timer: 2000,
+                position: "top-end",
+                showConfirmButton: false
+            });
             document.getElementById("chat-message-submit").disabled = true;
             window.location.href = "/products/";
         } else {
@@ -153,5 +172,10 @@
 
     timerSocket.onerror = err => console.error("Timer WebSocket Error:", err);
     timerSocket.onclose = () => console.log("Timer WebSocket disconnected");
+
+
 </script>
+
+
 {% endblock main %}
+

@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from userauth.forms import SignUpForm, LoginForm
+from django.contrib import messages
 
 def home(request):
     return render(request, 'userauth/home.html')
@@ -10,6 +11,7 @@ def register(request):
         form = SignUpForm(request.POST)  # Instantiate the form with POST data
         if form.is_valid():
             form.save()  # Save the user
+            messages.success(request, 'Registration successful! You can now log in.')
             return redirect('login')  # Redirect to the login page after successful registration
     else:
         form = SignUpForm()  # Instantiate an empty form for GET requests
@@ -28,8 +30,10 @@ def user_login(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
+                messages.success(request, "Login successful!")
                 return redirect('home')
             else:
+                messages.error(request, 'Invalid username or password')
                 form.add_error(None, 'Invalid username or password')
     else:
         form = LoginForm()
