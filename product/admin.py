@@ -1,5 +1,5 @@
 from django.contrib import admin
-from product.models import Product, Auction, Notification, Bid, ProductImage
+from product.models import Product, Auction, Bid, ProductImage
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
@@ -13,6 +13,5 @@ class ProductAdmin(admin.ModelAdmin):
     
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Auction)
-admin.site.register(Notification)
 admin.site.register(Bid)
 

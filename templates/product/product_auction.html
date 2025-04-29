@@ -76,7 +76,7 @@
     chatSocket.onmessage = function(e) {
         
         const data = JSON.parse(e.data);
-        console.log("Chat Data:", data);
+
         if (data.new_bid) {
 
             // Update live bid
@@ -101,6 +101,21 @@
                 position: "top-end",
                 showConfirmButton: false
             });
+
+            if (data.type === "unread_notification_update") {
+                console.log("Unread Notification Update Received:", data);
+        
+                const badge = document.getElementById("notification-badge");
+        
+                if (badge) {
+                    if (data.unread_notifications > 0) {
+                        badge.innerHTML = data.unread_notifications;
+                        badge.classList.remove("d-none");
+                    } else {
+                        badge.classList.add("d-none");
+                    }
+                }
+            }
         }
 
     };
@@ -134,7 +149,7 @@
         }
     };
 
-    //
+
 </script>
 
 <!-- WebSocket for Timer -->

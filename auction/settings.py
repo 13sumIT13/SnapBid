@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'userauth',
     'home',
     'product',
+    'notification',
 
 ]
 
@@ -73,6 +74,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'notification.context_processors.unread_notifications',  # Custom context processor
             ],
         },
     },
@@ -151,6 +153,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'userauth.User'
 LOGIN_REDIRECT_URL = '/home/'
 LOG_OUT_REDIRECT_URL = '/login/'
+LOGIN_URL = '/login/'
 
 
 MESSAGE_TAGS = {

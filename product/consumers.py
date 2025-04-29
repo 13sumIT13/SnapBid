@@ -1,12 +1,14 @@
 import json
 from channels.generic.websocket import WebsocketConsumer, AsyncJsonWebsocketConsumer
 from asgiref.sync import async_to_sync
-from product.models import Product, Auction, Notification, Bid
+from product.models import Product, Auction, Bid
 import asyncio
 from asgiref.sync import sync_to_async
 from django.utils.timezone import now
 from datetime import timedelta
 import time
+from notification.models import Notification
+from channels.layers import get_channel_layer
 
 
 class BidConsumer(WebsocketConsumer):
@@ -59,10 +61,18 @@ class BidConsumer(WebsocketConsumer):
                         message=f"New bid of {message} placed on {auction.product.name} by {auction.bidder.username}. The current bid is {auction.current_bid}."
                     )
                     notification.save()
-
-                    notify_message = notification.message
-                    notify_user = notification.user.username
-                    print(f"Notification: {notify_message} from User: {notify_user}")
+                    channel_layer = get_channel_layer()
+                    async_to_sync(channel_layer.group_send)(
+                        f"user_{prev_bidder.id}",  
+                        {
+                            "type" : "send_notification",
+                            "notification": {
+                                "id": notification.id,
+                                "message": notification.message,
+                                "heading": notification.heading,
+                            }
+                        }
+                    )
 
             # Create the new bid
             bid = Bid.objects.create(auction=auction, user=self.scope["user"], bid_amount=message)
@@ -75,7 +85,6 @@ class BidConsumer(WebsocketConsumer):
                     "type": "update_bid",
                     "new_bid": message,
                     "auction_id": auction_id,
-                    "notification": notify_message,
                     "bidder": auction.bidder.username if auction.bidder else None
                 },
             )
@@ -86,26 +95,15 @@ class BidConsumer(WebsocketConsumer):
         new_bid = event["new_bid"]
         auction_id = event["auction_id"]
         bidder = event["bidder"]
-        notification = event["notification"]
+
         # Send message to WebSocket
         self.send(text_data=json.dumps({
             "new_bid": new_bid,
             "auction_id": auction_id,
             "bidder": bidder,
-            "notification": notification,
-            "bidder": bidder
         }))
     
-    # def send_notification(self, event):
-    #     notification = event["notification"]
-    #     user = event["bidder"]
-    #     print(f"Sending Notification: {notification} to {user}")
-    #     # Send message to WebSocket
-    #     self.send(text_data=json.dumps({
-    #         "notification": notification,
-    #         "user": user
-    #     }))
- 
+
 
 class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
@@ -153,13 +151,20 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
                     heading="Auction Ending Soon",
                     message=f"The auction for {auction_id} is ending in 5 minutes."
                 )
-                await self.channel_layer.group_send(
-                    self.room_group_name,
+                notification.save()
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{self.scope['user'].id}",  # Send to the user's group
                     {
-                        "type": "send_notification",
-                        "notification": notification
+                        "type" : "send_notification",
+                        "notification": {
+                            "id": notification.id,
+                            "message": notification.message,
+                            "heading": notification.heading,
+                        }
                     }
                 )
+    
 
             if remaining_seconds <= 0:
                 await self.close_auction(auction_id)
@@ -222,22 +227,32 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
             auction.save()
 
             if auction.bidder:
-                notify = Notification.objects.create(
+                notification = Notification.objects.create(
                     user=auction.bidder,
                     heading=f"Auction Won : {auction.product.name}",
                     message=f"You have won the auction for {auction.product.name}! Your bid of {auction.current_bid} was successful. Please proceed with the payment and complete your purchase."
                     
                 )
-                async_to_sync(self.channel_layer.group_send)(
-                self.room_group_name, 
-                {
-                    "type": "send_notification", 
-                    "auction_id": auction_id,
-                    "message": notify.message
-                },
-            )
+                notification.save()
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{auction.bidder.id}",  # Send to the user's group
+                    {
+                        "type" : "send_notification",
+                        "notification": {
+                            "id": notification.id,
+                            "message": notification.message,
+                            "heading": notification.heading,
+                        }
+                    }
+                )
+            #     async_to_sync(self.channel_layer.group_send)(
+            #     self.room_group_name, 
+            #     {
+            #         "type": "send_notification", 
+            #         "auction_id": auction_id,
+            #         "message": notify.message
+            #     },
+            # )
 
-    async def send_notification(self, event):
-        """Sends auction notifications to clients."""
-        print(f"Sending Notification: {event['message']}")
-        await self.send_json({"notification": event["message"]})
+

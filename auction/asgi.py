@@ -12,6 +12,8 @@ import os
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
+from product import routing as product_routing
+from notification import routing as notification_routing
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'auction.settings')
@@ -19,6 +21,8 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'auction.settings')
 from product.routing import websocket_urlpatterns
 
 django_asgi_app = get_asgi_application()
+
+websocket_urlpatterns = product_routing.websocket_urlpatterns + notification_routing.websocket_urlpatterns
 
 application = ProtocolTypeRouter(
     {
