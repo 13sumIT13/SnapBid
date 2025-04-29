@@ -102,20 +102,20 @@
                 showConfirmButton: false
             });
 
-            if (data.type === "unread_notification_update") {
-                console.log("Unread Notification Update Received:", data);
+            // if (data.type === "unread_notification_update") {
+            //     console.log("Unread Notification Update Received:", data);
         
-                const badge = document.getElementById("notification-badge");
+            //     const badge = document.getElementById("notification-badge");
         
-                if (badge) {
-                    if (data.unread_notifications > 0) {
-                        badge.innerHTML = data.unread_notifications;
-                        badge.classList.remove("d-none");
-                    } else {
-                        badge.classList.add("d-none");
-                    }
-                }
-            }
+            //     if (badge) {
+            //         if (data.unread_notifications > 0) {
+            //             badge.innerHTML = data.unread_notifications;
+            //             badge.classList.remove("d-none");
+            //         } else {
+            //             badge.classList.add("d-none");
+            //         }
+            //     }
+            // }
         }
 
     };
@@ -171,11 +171,12 @@
                 title: "Auction Ended",
                 text: "The auction has ended. Redirecting to products page.",
                 timer: 2000,
-                position: "top-end",
                 showConfirmButton: false
             });
             document.getElementById("chat-message-submit").disabled = true;
-            window.location.href = "/products/";
+            setTimeout(() => {
+                window.location.href = "/products/";
+            }, 3000); // 3-second delay before redirecting
         } else {
             const time = data.message;
             document.getElementById("days").textContent = time.days.toString().padStart(2, '0');

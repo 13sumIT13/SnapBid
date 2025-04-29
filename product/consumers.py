@@ -9,6 +9,7 @@ from datetime import timedelta
 import time
 from notification.models import Notification
 from channels.layers import get_channel_layer
+from django.utils import timezone
 
 
 class BidConsumer(WebsocketConsumer):
@@ -146,25 +147,34 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
 
             if remaining_seconds <= 300 and not notification_sent:  # 5-minute warning
                 notification_sent = True
-                notification = Notification.objects.create(
-                    user=self.scope["user"],
-                    heading="Auction Ending Soon",
-                    message=f"The auction for {auction_id} is ending in 5 minutes."
-                )
-                notification.save()
-                channel_layer = get_channel_layer()
-                async_to_sync(channel_layer.group_send)(
-                    f"user_{self.scope['user'].id}",  # Send to the user's group
-                    {
-                        "type" : "send_notification",
-                        "notification": {
-                            "id": notification.id,
-                            "message": notification.message,
-                            "heading": notification.heading,
+                existing = await sync_to_async(
+                Notification.objects.filter(
+                        user=self.scope["user"],
+                        heading="Auction Ending Soon",
+                        created_at__gte=timezone.now() - timedelta(minutes=5)
+                    ).exists
+                )()
+
+             
+                if not existing:
+                    notification = await sync_to_async(Notification.objects.create)(
+                        user=self.scope["user"],
+                        heading="Auction Ending Soon",
+                        message=f"The auction for {auction_id} is ending in 5 minutes."
+                    )
+                    channel_layer = get_channel_layer()
+                    await channel_layer.group_send(
+                        f"user_{self.scope['user'].id}",  # Send to the user's group
+                        {
+                            "type" : "send_notification",
+                            "notification": {
+                                "id": notification.id,
+                                "message": notification.message,
+                                "heading": notification.heading,
+                            }
                         }
-                    }
-                )
-    
+                    )
+        
 
             if remaining_seconds <= 0:
                 await self.close_auction(auction_id)
@@ -217,7 +227,7 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
     def get_auction(self, auction_id):
         """Fetch auction object asynchronously."""
         return Auction.objects.filter(id=auction_id).first()
-
+    
     @sync_to_async
     def close_auction(self, auction_id):
         """Closes the auction and updates the status."""
@@ -242,17 +252,8 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
                         "notification": {
                             "id": notification.id,
                             "message": notification.message,
-                            "heading": notification.heading,
+                            "heading": notification.heading
                         }
                     }
                 )
-            #     async_to_sync(self.channel_layer.group_send)(
-            #     self.room_group_name, 
-            #     {
-            #         "type": "send_notification", 
-            #         "auction_id": auction_id,
-            #         "message": notify.message
-            #     },
-            # )
-
-
+ 
