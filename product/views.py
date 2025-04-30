@@ -14,6 +14,13 @@ class ProductList(ListView):
     context_object_name = 'products'
     paginate_by = 6 
 
+    def get_queryset(self):
+        """Override to filter products based on the logged-in user."""
+        queryset = super().get_queryset()
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(name__icontains=query)
+        return queryset
     
     
 class ProductDetail(LoginRequiredMixin, DetailView):
@@ -118,6 +125,8 @@ class ProductAuction(LoginRequiredMixin, DetailView):
     model = Auction
     template_name = 'product/product_auction.html'
     context_object_name = 'auction'
+    login_url = 'login'
+
 
     def get_context_data(self, **kwargs):
         """Pass product_id and auction_id to the template."""

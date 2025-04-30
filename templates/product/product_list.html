@@ -2,19 +2,23 @@
 {% block main %}
 
         <!-- Page Header with title and search -->
-        <header class="page-header">
+        <header class="page-header py-4">
             <div class="container">
-                <h1 class="page-title">Products</h1>
+                <h1 class="page-title mb-3">Products</h1>
                 <div class="search-container">
-                    <div class="input-group">
-                        <input type="text" class="form-control search-input" placeholder="Search for auctions..." aria-label="Search for auctions">
-                        <button class="btn search-button" type="button">
+                    <form method="get" action="{% url 'product-list' %}" class="search-form d-flex">
+                        <input type="text" name="q" class="form-control search-input me-2" 
+                            placeholder="Search for auctions..." 
+                            aria-label="Search for auctions"
+                            value="{{ request.GET.q }}">
+                        <button class="btn search-button" type="submit">
                             <i class="fas fa-search me-2"></i> Search
                         </button>
-                    </div>
+                    </form>
                 </div>
             </div>
         </header>
+        
         
         <!-- Main Content -->
         <main class="container mx-auto">  
