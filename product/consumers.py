@@ -232,7 +232,7 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
     def close_auction(self, auction_id):
         """Closes the auction and updates the status."""
         auction = Auction.objects.filter(id=auction_id).first()
-        if auction:
+        if auction and auction.status != "Closed":
             auction.status = "Closed"
             auction.save()
 
