@@ -243,8 +243,16 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
                     message=f"You have won the auction for {auction.product.name}! Your bid of {auction.current_bid} was successful. Please proceed with the payment and complete your purchase."
                     
                 )
+                owner_notification = Notification.objects.create(
+                    user=auction.product.owner,
+                    heading=f"Auction Closed : {auction.product.name}",
+                    message=f"The auction for {auction.product.name} has closed. The winning bid was {auction.current_bid}."
+                )
                 notification.save()
+                owner_notification.save()
                 channel_layer = get_channel_layer()
+
+                
                 async_to_sync(channel_layer.group_send)(
                     f"user_{auction.bidder.id}",  # Send to the user's group
                     {
@@ -256,4 +264,16 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
                         }
                     }
                 )
- 
+
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{auction.product.owner.id}",  # Send to the owner's group
+                    {
+                        "type" : "send_notification",
+                        "notification": {
+                            "id": owner_notification.id,
+                            "message": owner_notification.message,
+                            "heading": owner_notification.heading
+                        }
+                    }
+                )
+            
