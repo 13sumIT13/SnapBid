@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from userauth.models import User
 from django.utils import timezone
 from datetime import timedelta
+from cloudinary.models import CloudinaryField
 
 
 
@@ -23,7 +24,7 @@ class Product(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     starting_price = models.PositiveIntegerField()
-    image = models.ImageField(upload_to='product_images/')
+    image = CloudinaryField("image")
     status = models.CharField(choices=STATUS_CHOICES, max_length=10, default='A')
     views = models.PositiveIntegerField(default=0, null=True, blank=True)
     
@@ -33,7 +34,7 @@ class Product(models.Model):
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
-    image = models.ImageField(upload_to='product_images/')
+    image = CloudinaryField("image")
 
     def __str__(self):
         return f"Image for {self.product.name}"

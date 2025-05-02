@@ -1,0 +1,132 @@
+body {
+    background-color: #f4f6f9;
+    font-family: 'Arial', sans-serif;
+}
+.contact-container {
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    margin-top: 30px;
+    overflow: hidden;
+}
+.page-header {
+    background-color: #0d6efd;
+    color: white;
+    padding: 30px 0;
+    text-align: center;
+    position: relative;
+}
+.contact-form {
+    padding: 30px;
+}
+.contact-info {
+    padding: 30px;
+    background-color: #f8f9fa;
+    border-left: 1px solid #e0e0e0;
+}
+.contact-card {
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    background-color: white;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    transition: transform 0.3s;
+}
+.contact-card:hover {
+    transform: translateY(-5px);
+}
+.icon-circle {
+    width: 60px;
+    height: 60px;
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+.submit-btn {
+    background-color: #0d6efd;
+    color: white;
+    padding: 12px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+.submit-btn:hover {
+    background-color: #0b5ed7;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+}
+.form-floating > label {
+    color: #6c757d;
+}
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+.social-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.3s;
+}
+.social-icon:hover {
+    transform: scale(1.2);
+}
+.map-container {
+    height: 250px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.required-label::after {
+    content: '*';
+    color: red;
+    margin-left: 3px;
+}
+.floating-shapes {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    z-index: 0;
+}
+.shape {
+    position: absolute;
+    opacity: 0.2;
+    background-color: white;
+}
+.shape-1 {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    top: 10%;
+    left: 10%;
+}
+.shape-2 {
+    width: 60px;
+    height: 60px;
+    border-radius: 5px;
+    transform: rotate(45deg);
+    top: 60%;
+    right: 15%;
+}
+.shape-3 {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    top: 20%;
+    right: 30%;
+}

@@ -14,12 +14,26 @@
                         <img src="{{ product.image.url }}" alt="Product Image" class="product-image-detail" id="main-image">
                     </div>
                     <div class="thumbnail-container">
+                        {# First show the main image as a thumbnail #}
+                        <img
+                          src="{{ product.image.url }}"
+                          alt="Main product image"
+                          class="thumbnail active"
+                          onclick="changeImage(this)"
+                        >
+                    
+                        {# Then show any extra gallery images #}
                         {% for img in product.images.all %}
-                            <img src="{{ img.image.url }}" alt="Thumbnail 1" class="thumbnail active" onclick="changeImage(this)">
+                          <img
+                            src="{{ img.image.url }}"
+                            alt="Thumbnail {{ forloop.counter }}"
+                            class="thumbnail"
+                            onclick="changeImage(this)"
+                          >
                         {% endfor %}
                     </div>
+                    
                 </div>
-                
                 <!-- Product Details Section -->
                 <div class="col-lg-6">
                     <h1 class="mb-3">{{ product.name }}</h1>
@@ -76,21 +90,30 @@
         </div>
     </div>
     
-   <script>
+    <script>
         function changeImage(element) {
-            document.getElementById('main-image').src = element.src;
-            
+            const mainImage = document.getElementById('main-image');
+            const newSrc = element.getAttribute('src');
+    
+            // Fallback if no src
+            if (!newSrc) {
+                console.error("Thumbnail image has no src attribute!");
+                return;
+            }
+    
+            mainImage.src = newSrc;
+    
             // Remove active class from all thumbnails
             let thumbnails = document.getElementsByClassName('thumbnail');
             for (let i = 0; i < thumbnails.length; i++) {
                 thumbnails[i].classList.remove('active');
             }
-            
+    
             // Add active class to clicked thumbnail
             element.classList.add('active');
         }
+    </script>
     
-   </script>
     <!-- Update Product Modal -->
     
 {% endblock main %}
