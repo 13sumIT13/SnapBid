@@ -71,7 +71,8 @@
 <script>
   
     const auction_id = {{ auction.id|safe }};
-    const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/');
+    const wsPro = window.location.protocol === "https:" ? "wss://" : "ws://";
+    const chatSocket =  new WebSocket(wsPro + window.location.host + "/ws/bid/" + auction_id + "/");
 
     chatSocket.onmessage = function(e) {
         
@@ -154,44 +155,50 @@
 
 <!-- WebSocket for Timer -->
 <script>
-    const timerSocket = new WebSocket("ws://127.0.0.1:8000/ws/timer/");
+    const auctionId = {{ auction.id|safe }};
+    const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    const timerSocket = new WebSocket(wsProtocol + window.location.host + "/ws/timer/" + auctionId + "/");
 
-    timerSocket.onopen = () => {
-        console.log("Timer WebSocket connected");
-        timerSocket.send(JSON.stringify({ "auction": {{ auction.id }} }));
-    };
-
-    timerSocket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        //console.log("Timer Data:", data);
-
-        if (data.message === "Auction Ended") {
-            Swal.fire({
-                icon: "info",
-                title: "Auction Ended",
-                text: "The auction has ended. Redirecting to products page.",
-                timer: 2000,
-                showConfirmButton: false
-            });
-            document.getElementById("chat-message-submit").disabled = true;
-            setTimeout(() => {
-                window.location.href = "/products/";
-            }, 3000); // 3-second delay before redirecting
-        } else {
-            const time = data.message;
-            document.getElementById("days").textContent = time.days.toString().padStart(2, '0');
-            document.getElementById("hours").textContent = time.hours.toString().padStart(2, '0');
-            document.getElementById("minutes").textContent = time.minutes.toString().padStart(2, '0');
-            document.getElementById("seconds").textContent = time.seconds.toString().padStart(2, '0');
+    timerSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.type === "end_time") {
+            startCountdown(data.end_time);
         }
     };
 
-    timerSocket.onerror = err => console.error("Timer WebSocket Error:", err);
-    timerSocket.onclose = () => console.log("Timer WebSocket disconnected");
+    timerSocket.onclose = function(e) {
+        console.error('Timer socket closed unexpectedly');
+    };
 
+    let timerInterval = null;
+
+    function startCountdown(endTimestamp) {
+        clearInterval(timerInterval);
+
+        timerInterval = setInterval(() => {
+            const now = Date.now() / 1000;
+            let remaining = Math.floor(endTimestamp - now);
+
+            if (remaining <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById("countdown").innerText = "Auction Ended";
+                return;
+            }
+
+            const days = Math.floor(remaining / 86400);
+            const hours = Math.floor((remaining % 86400) / 3600);
+            const minutes = Math.floor((remaining % 3600) / 60);
+            const seconds = remaining % 60;
+
+            document.getElementById("days").textContent = String(days).padStart(2, '0');
+            document.getElementById("hours").textContent = String(hours).padStart(2, '0');
+            document.getElementById("minutes").textContent = String(minutes).padStart(2, '0');
+            document.getElementById("seconds").textContent = String(seconds).padStart(2, '0');
+        }, 1000);
+    }
 
 </script>
-
+    
 
 {% endblock main %}
 

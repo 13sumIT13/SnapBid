@@ -12,6 +12,9 @@ from channels.layers import get_channel_layer
 from django.utils import timezone
 
 
+active_timers: dict[int, asyncio.Task] = {}
+
+
 class BidConsumer(WebsocketConsumer):
 
     def connect(self):
@@ -104,176 +107,23 @@ class BidConsumer(WebsocketConsumer):
             "bidder": bidder,
         }))
     
-
-
+# consumers.py
 class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
-        """Handles WebSocket connection."""
-        self.room_group_name = "timer_status"
+        self.auction_id = self.scope["url_route"]["kwargs"]["auction_id"]
+        self.room_group_name = f"auction_{self.auction_id}"
+
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
-    async def disconnect(self, close_code):
-        """Handles WebSocket disconnection."""
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        auction = await sync_to_async(Auction.objects.get)(id=self.auction_id)
+        end_time_ts = auction.end_time.timestamp()
 
-    async def receive(self, text_data):
-        """Handles incoming WebSocket messages and starts a countdown."""
-        try:
-            data = json.loads(text_data)
-            auction_id = data.get("auction")
-            
-            if not auction_id:
-                await self.send_json({"error": "Auction ID is required"})
-                return
-
-            # Fetch auction asynchronously
-            auction = await self.get_auction(auction_id)
-            if not auction:
-                await self.send_json({"error": "Auction does not exist"})
-                return
-
-            # Start the countdown timer as a background task
-            asyncio.create_task(self.start_timer(auction.end_time.timestamp(), auction_id))
-        except json.JSONDecodeError:
-            await self.send_json({"error": "Invalid JSON format"})
-
-    async def start_timer(self, end_time, auction_id):
-        """Runs a countdown timer in the background."""
-        notification_sent = False
-
-        while True:
-            remaining_seconds = int(end_time - time.time())
-
-            if remaining_seconds <= 300 and not notification_sent:  # 5-minute warning
-                notification_sent = True
-                existing = await sync_to_async(
-                Notification.objects.filter(
-                        user=self.scope["user"],
-                        heading="Auction Ending Soon",
-                        created_at__gte=timezone.now() - timedelta(minutes=5)
-                    ).exists
-                )()
-
-             
-                if not existing:
-                    notification = await sync_to_async(Notification.objects.create)(
-                        user=self.scope["user"],
-                        heading="Auction Ending Soon",
-                        message=f"The auction for {auction_id} is ending in 5 minutes."
-                    )
-                    channel_layer = get_channel_layer()
-                    await channel_layer.group_send(
-                        f"user_{self.scope['user'].id}",  # Send to the user's group
-                        {
-                            "type" : "send_notification",
-                            "notification": {
-                                "id": notification.id,
-                                "message": notification.message,
-                                "heading": notification.heading,
-                            }
-                        }
-                    )
-        
-
-            if remaining_seconds <= 0:
-                await self.close_auction(auction_id)
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        "type": "timer_update",
-                        "message": "Auction Ended",
-                        "auction": auction_id
-                    }
-                )
-                break  # Stop the loop when time is up
-
-            # Format remaining time as {X days, Y hrs, Z min, W sec}
-            formatted_time = self.format_time(remaining_seconds)
-            
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    "type": "timer_update",
-                    "message": formatted_time,
-                    "auction": auction_id
-                }
-            )
-            await asyncio.sleep(1)  # Update every second
-
-    @staticmethod
-    def format_time(seconds):
-        """Converts seconds into days, hours, minutes, and seconds format."""
-        days = seconds // 86400
-        hours = (seconds % 86400) // 3600
-        minutes = (seconds % 3600) // 60
-        secs = seconds % 60
-
-        return {
-            "days": days,
-            "hours": hours,
-            "minutes": minutes,
-            "seconds": secs
-        }
-
-    async def timer_update(self, event):
-        """Handles sending timer updates to clients."""
+        # Send end_time once on connect
         await self.send_json({
-            "message": event["message"],
-            "auction": event["auction"]
+            "type": "end_time",
+            "end_time": end_time_ts,
         })
 
-    @sync_to_async
-    def get_auction(self, auction_id):
-        """Fetch auction object asynchronously."""
-        return Auction.objects.filter(id=auction_id).first()
-    
-    @sync_to_async
-    def close_auction(self, auction_id):
-        """Closes the auction and updates the status."""
-        auction = Auction.objects.filter(id=auction_id).first()
-        if auction and auction.status != "Closed":
-            auction.status = "Closed"
-            auction.save()
-
-            if auction.bidder:
-                notification = Notification.objects.create(
-                    user=auction.bidder,
-                    heading=f"Auction Won : {auction.product.name}",
-                    message=f"You have won the auction for {auction.product.name}! Your bid of {auction.current_bid} was successful. Please proceed with the payment and complete your purchase."
-                    
-                )
-                owner_notification = Notification.objects.create(
-                    user=auction.product.owner,
-                    heading=f"Auction Closed : {auction.product.name}",
-                    message=f"The auction for {auction.product.name} has closed. The winning bid was {auction.current_bid}."
-                )
-                notification.save()
-                owner_notification.save()
-                channel_layer = get_channel_layer()
-
-                
-                async_to_sync(channel_layer.group_send)(
-                    f"user_{auction.bidder.id}",  # Send to the user's group
-                    {
-                        "type" : "send_notification",
-                        "notification": {
-                            "id": notification.id,
-                            "message": notification.message,
-                            "heading": notification.heading
-                        }
-                    }
-                )
-
-                async_to_sync(channel_layer.group_send)(
-                    f"user_{auction.product.owner.id}",  # Send to the owner's group
-                    {
-                        "type" : "send_notification",
-                        "notification": {
-                            "id": owner_notification.id,
-                            "message": owner_notification.message,
-                            "heading": owner_notification.heading
-                        }
-                    }
-                )
-            
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
