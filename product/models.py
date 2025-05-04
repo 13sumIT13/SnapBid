@@ -44,6 +44,9 @@ class Auction(models.Model):
     current_bid = models.PositiveIntegerField(null=True, blank=True)
     bidder = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(choices=BID_CHOICES, max_length=10, default='Live')
+    five_min_warning_sent = models.BooleanField(default=False)
+    auction_winner_sent = models.BooleanField(default=False)
+
 
     end_time = models.DateTimeField(null=True, blank=True)    
     def __str__(self):

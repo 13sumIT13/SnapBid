@@ -13,7 +13,7 @@ from django.utils import timezone
 
 
 active_timers: dict[int, asyncio.Task] = {}
-
+prev_bidder = None
 
 class BidConsumer(WebsocketConsumer):
 
@@ -107,7 +107,12 @@ class BidConsumer(WebsocketConsumer):
             "bidder": bidder,
         }))
     
-# consumers.py
+
+@sync_to_async(thread_sensitive=False)
+def create_notification(user, heading, message):
+    return Notification.objects.create(user=user, heading=heading, message=message)
+
+
 class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         self.auction_id = self.scope["url_route"]["kwargs"]["auction_id"]
@@ -125,5 +130,56 @@ class TimerStatusConsumer(AsyncJsonWebsocketConsumer):
             "end_time": end_time_ts,
         })
 
+
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        message = text_data_json["message"]
+        auction_id = text_data_json["auction"]
+        auction = await sync_to_async(Auction.objects.get)(id=auction_id)
+        product_name = await sync_to_async(lambda: auction.product.name)()
+        owner_id = await sync_to_async(lambda: auction.product.owner.id)()
+        bidder = await sync_to_async(lambda: auction.bidder)()
+
+
+        channel_layer = get_channel_layer()
+        if message == "Auction ended":
+            if not auction.auction_winner_sent:
+                auction.status = "Closed"
+                auction.auction_winner_sent = True
+                await sync_to_async(auction.save)()
+
+                notification = await create_notification(
+                    user=bidder,
+                    heading="Auction Win",
+                    message=f"{message} for product : {product_name} and you are the winner!",
+                )
+
+                bidder = await sync_to_async(lambda: auction.bidder.id)()
+                await channel_layer.group_send(
+                    f"user_{bidder}",
+                    {
+                        "type": "send_notification",
+                        "notification": {
+                            "id": notification.id,
+                            "message": notification.message,
+                            "heading": notification.heading,
+                        }
+                    }
+                )
+
+                await channel_layer.group_send(
+                    f"user_{owner_id}",
+                    {
+                        "type": "send_notification",
+                        "notification": {
+                            "id": notification.id,
+                            "message": f"notification ended for product : {product_name}",
+                            "heading": notification.heading,
+                        }
+                    }
+                )
+
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+
+    
