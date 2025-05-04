@@ -36,7 +36,8 @@ if ENVIRONMENT == 'development':
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'snapbid.onrender.com']
+CSRF_TRUSTED_ORIGINS = ['https://snapbid.onrender.com']
 
 
 # Application definition
