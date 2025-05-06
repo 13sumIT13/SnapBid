@@ -1,25 +1,11 @@
-"""
-ASGI config for auction project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
-"""
-
 import os
-
-
+import django
 from django.core.asgi import get_asgi_application
 
-
-
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'auction.settings')
+django.setup()  # <-- make sure apps are loaded before importing anything else
 
-from product.routing import websocket_urlpatterns
-
-django_asgi_app = get_asgi_application()
-
+# Now it's safe to import routing, models, etc.
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from product import routing as product_routing
@@ -29,10 +15,9 @@ websocket_urlpatterns = product_routing.websocket_urlpatterns + notification_rou
 
 application = ProtocolTypeRouter(
     {
-        "http": django_asgi_app,
+        "http": get_asgi_application(),
         "websocket": AuthMiddlewareStack(
             URLRouter(websocket_urlpatterns)
         ),
-        
     }
 )
