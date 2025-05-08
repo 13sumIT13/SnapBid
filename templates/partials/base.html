@@ -185,7 +185,9 @@
     </script>
     <script>
 
-    let socket = new WebSocket("ws://127.0.0.1:8000/ws/notifications/");
+    let protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    let socket = new WebSocket(`${protocol}://${window.location.host}/ws/notifications/`);
+
 
     socket.onmessage = function(event) {
         let data = JSON.parse(event.data);
